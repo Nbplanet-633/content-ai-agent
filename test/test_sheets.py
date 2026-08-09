@@ -12,13 +12,15 @@ print("3. sheets_service imported")
 
 
 test_row = [
-    "IIT Placement Preparation",
-    "How I Prepared for IIT Placements",
-    "Practical preparation roadmap",
-    "I wish I knew these things before placement season.",
-    87.5,
-    "https://www.youtube.com/",
-    "2026-08-08"
+    "IIT Hostel Life",
+    "7 Things Nobody Tells You About IIT Hostel Life",
+    "Hidden hostel experiences",
+    "You think you know IIT hostel life? Think again.",
+    85,
+    "Vlog",
+    "Current IIT students",
+    "https://www.youtube.com/watch?v=test123",
+    "2026-08-09"
 ]
 
 print("4. About to call add_row()")

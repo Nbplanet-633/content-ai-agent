@@ -4,10 +4,13 @@ import re
 from crewai.tools import tool
 
 from tools.youtube_api import search_niche_videos
+from services.mongo_service import save_videos
 
 from tools.trend_scoring import (
     calculate_views_per_day,
     calculate_engagement_rate,
+    calculate_recency_score,
+    calculate_velocity_score,
     calculate_trend_score
 )
 
@@ -75,7 +78,12 @@ def youtube_trend_search(query: str) -> str:
         videos = search_niche_videos(
             query=query,
             region_code="IN",
-            max_results=5
+            max_results=20
+        )
+
+        print(
+            f"\nYouTube returned {len(videos)} candidate videos "
+            f"for '{query}'."
         )
 
         if not videos:
@@ -87,6 +95,10 @@ def youtube_trend_search(query: str) -> str:
                     f"the niche '{query}'."
                 )
             })
+
+        # --------------------------------------------------
+        # Calculate basic metrics
+        # --------------------------------------------------
 
         for video in videos:
 
@@ -101,22 +113,68 @@ def youtube_trend_search(query: str) -> str:
                 video["comments"]
             )
 
-            video["trend_score"] = calculate_trend_score(
-                video["views_per_day"],
-                video["engagement_rate"],
+            video["recency_score"] = calculate_recency_score(
                 video["published_at"]
             )
 
+
+        # --------------------------------------------------
+        # Calculate velocity range
+        # --------------------------------------------------
+
+        views_per_day_values = [
+            video["views_per_day"]
+            for video in videos
+        ]
+
+        min_views_per_day = min(
+            views_per_day_values,
+            default=0
+        )
+
+        max_views_per_day = max(
+            views_per_day_values,
+            default=0
+        )
+
+
+        # --------------------------------------------------
+        # Calculate final trend score
+        # --------------------------------------------------
+
+        for video in videos:
+
+            video["velocity_score"] = calculate_velocity_score(
+                video["views_per_day"],
+                min_views_per_day,
+                max_views_per_day
+            )
+
+            video["trend_score"] = calculate_trend_score(
+                video["velocity_score"],
+                video["engagement_rate"],
+                video["recency_score"]
+            )
+
         videos.sort(
-            key=lambda video: video["trend_score"],
+            key=lambda video: video.get("trend_score", 0),
             reverse=True
         )
 
-        return json.dumps({
-            "status": "success",
-            "query": query,
-            "videos": videos
-        })
+        videos = videos[:8]
+
+        save_videos(
+            videos,
+            query
+        )
+
+        return videos
+
+        # return json.dumps({
+        #     "status": "success",
+        #     "query": query,
+        #     "videos": videos
+        # })
 
     except Exception as error:
 

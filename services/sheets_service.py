@@ -83,7 +83,7 @@ def add_row(values):
         .values()
         .append(
             spreadsheetId=spreadsheet_id,
-            range="Content Ideas!A:G",
+            range="Sheet1!A:I",
             valueInputOption="USER_ENTERED",
             insertDataOption="INSERT_ROWS",
             body=body
@@ -123,6 +123,8 @@ def add_content_ideas(ideas):
             idea["suggested_angle"],
             idea["hook"],
             idea["trend_strength"],
+            idea["content_format"],
+            idea["target_audience"],
             idea["source_reference"],
             datetime.now().strftime("%Y-%m-%d")
         ])
@@ -145,7 +147,7 @@ def add_content_ideas(ideas):
         .values()
         .append(
             spreadsheetId=spreadsheet_id,
-            range="Sheet1!A:G",
+            range="Sheet1!A:I",
             valueInputOption="USER_ENTERED",
             insertDataOption="INSERT_ROWS",
             body=body
@@ -174,7 +176,7 @@ def get_existing_topics():
         .values()
         .get(
             spreadsheetId=spreadsheet_id,
-            range="Sheet1!A:A"
+            range="Sheet1!A:I"
         )
         .execute()
     )
